@@ -26,7 +26,7 @@ public class Server implements Runnable {
     public void run() {
         try {
             serverSocket = new ServerSocket(SERVER_PORT);
-            System.out.println("Start server on port" + SERVER_PORT);
+            System.out.println("Start server on port " + SERVER_PORT);
 
             while (true) {
                 ConnectionWorker worker = null;
@@ -42,7 +42,7 @@ public class Server implements Runnable {
                 }
             }
         }catch (IOException e) {
-            System.out.println("Can't start server on port" + SERVER_PORT + " " + e.getMessage());
+            System.out.println("Can't start server on port " + SERVER_PORT + " " + e.getMessage());
         }finally {
             if (serverSocket != null) {
                 try {
