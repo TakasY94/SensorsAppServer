@@ -5,7 +5,7 @@ import java.sql.*;
 
 public class ConnectionWorker implements Runnable{
 
-    //Сокет через который обменваемся днными с клиентом
+    //Socket for exchange data with client
     private Socket clientSocket = null;
 
     private InputStream inputStream = null;
@@ -44,23 +44,24 @@ public class ConnectionWorker implements Runnable{
             try {
                 int count = inputStream.read(buffer, 0, buffer.length);
                 StringBuilder stringBuilder = new StringBuilder(new String(buffer, 0, count));
-                int n = 0;
-                int k = 0;
 
-                for (int i = 0; i < 4; i++) {
-                    k = stringBuilder.indexOf(" ", n);
-                    list[i] = stringBuilder.substring(n, k);
-                    n = k++;
-                }
-
-
-                for (String e: list) {
-                    System.out.print(e);
-                }
 
                 if (count > 0) {
                     try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD); Statement statement = connection.createStatement();) {
+                        //Create statement here
+                        int n = 0;
+                        int k = 0;
 
+                        for (int i = 0; i < 4; i++) {
+                            k = stringBuilder.indexOf(" ", n);
+                            list[i] = stringBuilder.substring(n, k);
+                            n = k++;
+                        }
+                        // TODO Разобраться в ошибке вывода данных (То ли они приходят некорректные, то ли логика вычленения нарушена)
+                        System.out.println("Test");
+                        for (String e: list) {
+                            System.out.print("?" + e);
+                        }
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
