@@ -1,20 +1,23 @@
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.sql.*;
 
-public class ConnectionWorker implements Runnable{
+public class ConnectionWorker implements Runnable {
 
     //Socket for exchange data with client
     private Socket clientSocket = null;
+    private Parametres parametres ;
 
     private InputStream inputStream = null;
+    ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
     public static final String URL = "jdbc:mysql://localhost:3306/sensorsappdb?autoReconnect=true&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC";
     public static final String USER = "root";
     public static final String PASSWORD = "root";
 
-    public ConnectionWorker (Socket socket) {
+    public ConnectionWorker (Socket socket) throws IOException {
         clientSocket = socket;
     }
 
@@ -37,43 +40,36 @@ public class ConnectionWorker implements Runnable{
             System.out.println("Driver not registered");
         }
 
-        byte[] buffer = new byte[1024*24];
-        String[] list = new String[5];
+
 
         while (true) {
             try {
-                int count = inputStream.read(buffer, 0, buffer.length);
-                StringBuilder stringBuilder = new StringBuilder(new String(buffer, 0, count));
+                parametres = (Parametres) objectInputStream.readObject();
 
-
-                if (count > 0) {
+                if (parametres != null) {
                     try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD); Statement statement = connection.createStatement();) {
                         //Create statement here
                         int n = 0;
                         int k = 0;
 
-                        for (int i = 0; i < 4; i++) {
-                            k = stringBuilder.indexOf(" ", n);
-                            list[i] = stringBuilder.substring(n, k);
-                            n = k++;
-                        }
                         // TODO Разобраться в ошибке вывода данных (То ли они приходят некорректные, то ли логика вычленения нарушена)
                         System.out.println("Test");
-                        for (String e: list) {
-                            System.out.print("?" + e);
-                        }
+
                     } catch (SQLException e) {
                         e.printStackTrace();
-                    }
-                    System.out.println(new String(buffer, 0, count));
+                      }
+                    System.out.println("X - " + parametres.getAccX() + "Y - " + parametres.getAccY() + "Z - " + parametres.getAccZ());
                 } else
-                    if (count == -1) {
-                        System.out.println("close socket");
+                    if (parametres == null) {
+                        System.out.println("Object null! Close socket");
                         clientSocket.close();
                         break;
                     }
             } catch (IOException e) {
                 System.out.println(e.getMessage());
+            }
+              catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
         }
     }
